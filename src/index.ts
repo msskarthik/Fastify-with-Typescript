@@ -3,37 +3,41 @@ import pino from 'pino';
 import { fastifySwagger } from '@fastify/swagger';
 import PinoPretty from 'pino-pretty';
 import config from './config/env.config';
+import multipart from '@fastify/multipart';
 import mongoose from 'mongoose';
-import fastifyJwt from '@fastify/jwt';
+// import fastifyJwt from '@fastify/jwt';
 import Routes from './routes/index.routes';
-import envConfig from './config/env.config';
 import fastifyCors from '@fastify/cors';
 
 const fastify = Fastify({
     logger: pino(PinoPretty({
-        colorize:true,
-        translateTime:'UTC:yyyy-mm-dd HH:MM:ss.l o',
-        mkdir:true
+        colorize: true,
+        translateTime: 'UTC:yyyy-mm-dd HH:MM:ss.l o',
+        mkdir: true
     }))
 });
 
 fastify.register(fastifyCors);
 
+fastify.register(multipart, {
+    limits: { fileSize: 52428800 } // maxsize: 50MB
+});
+
 fastify.register(fastifySwagger);
 
 
-fastify.register(fastifyJwt, {
-    secret: envConfig.SecretKey
-})
+// fastify.register(fastifyJwt, {
+//     secret: envConfig.SecretKey
+// })
 
-fastify.addHook('onRequest', async (request, reply) => {
-    try {
-        await request.jwtVerify();
-    } catch (error) {
-        fastify.log.error('UnAuthorized')
-        reply.send(error);
-    }
-})
+// fastify.addHook('onRequest', async (request, reply) => {
+//     try {
+//         await request.jwtVerify();
+//     } catch (error) {
+//         fastify.log.error('UnAuthorized')
+//         reply.send(error);
+//     }
+// })
 
 fastify.register(Routes);
 
